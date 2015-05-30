@@ -16,7 +16,7 @@
         <th width="100">magic2</th>
         <th width="100">magic3</th>
     </tr>
-    @foreach($army as $unit)
+    @foreach($units as $unit)
         <?php $race = $unit['race_id'] ?>
         <tr>
             <td>{{ Lang::get('battle-calc::units.'.$unit['id']) }}</td>

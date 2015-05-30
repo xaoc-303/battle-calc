@@ -1,22 +1,15 @@
-<?=Form::open(['url' => 'calc/calculation', 'method' => 'get',  'id' => 'form-army'])?>
+{{Form::open(['url' => route('bc.calc'), 'method' => 'get',  'id' => 'form-army'])}}
     <div>
-        <?php
-        $races = [
-            1 => Lang::get('battle-calc::races.1'),
-            2 => Lang::get('battle-calc::races.2'),
-            3 => Lang::get('battle-calc::races.3')
-        ]
-        ?>
-        <?=Form::select('', $races, 1, ['class' => "select-army",  "data-id-army" => "1"])?>
+        {{Form::select('', $races, 1, ['class' => "select-army",  "data-id-army" => "1"])}}
         <div id="army1"></div>
     </div>
     <hr />
     <div>
-        <?=Form::select('', $races, 2, ['class' => "select-army",  "data-id-army" => "2"])?>
+        {{Form::select('', $races, 2, ['class' => "select-army",  "data-id-army" => "2"])}}
         <div id="army2"></div>
     </div>
-<?=Form::submit('Расчет', ["id" => "but-calculation"])?>
-<?=Form::close()?>
+{{Form::submit(null, ["id" => "but-calculation"])}}
+{{Form::close()}}
 <div id="log"></div>
 <hr />
 
@@ -32,16 +25,16 @@
              }*/
         });
         return false;
-    };
+    }
 
     function army( id_army, race ){
         console.log(id_army + ' ' + race);
-        $.get('calc/GetArmyBase/'+id_army+'/'+race,
+        $.get("{{route('bc.army_base')}}"+"/"+id_army+"/"+race,
             function(response){
                 $("#army"+id_army).html(response);
             });
         return false;
-    };
+    }
 
     $(function() {
         $('.select-army').on('change', function(){
@@ -50,7 +43,7 @@
         $('#but-calculation').on('submit', function( event ) {
 
         });
-        army(1,$('.select-army[data-id-army = 1]').children('option:selected').val() );
-        army(2,$('.select-army[data-id-army = 2]').children('option:selected').val() );
+        army(1, $('.select-army[data-id-army = 1]').children('option:selected').val() );
+        army(2, $('.select-army[data-id-army = 2]').children('option:selected').val() );
     });
 </script>
