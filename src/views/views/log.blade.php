@@ -10,18 +10,18 @@
         <th width="100">HP</th>
         <th width="100">Cool</th>
     </tr>
-    <?php $count = count($Army);?>
+    <?php $count = count($units);?>
     @for($i = 0; $i < $count; $i++)
-        <tr style="color: <?=array_search($Army[$i]['All']['Color'], ['black' => 0, 'red' => 1, 'blue' => 2])?>;">
-            <td>{{Lang::get('battle-calc::units.'.$Army[$i]['Base']['ID'])}}</td>
-            <td>{{$Army[$i]['All']['ManCount']}}</td>
-            <td>{{$Army[$i]['All']['AttackTer']}}</td>
-            <td>{{$Army[$i]['All']['AttackAir']}}</td>
-            <td>{{$Army[$i]['All']['AttackMagicAll']}}</td>
-            <td>{{$Army[$i]['All']['Armor']}}</td>
-            <td>{{$Army[$i]['All']['Shield']}}</td>
-            <td>{{$Army[$i]['All']['HP']}}</td>
-            <td>{{($Army[$i]['All']['AttackCoolDouble'] + $Army[$i]['All']['AttackCoolInt'])}}</td>
+        <tr style="color: {{array_search($units[$i]['All']['Color'], ['black' => 0, 'red' => 1, 'blue' => 2])}};">
+            <td>{{Lang::get('battle-calc::units.'.$units[$i]['Base']['ID'])}}</td>
+            <td>{{$units[$i]['All']['ManCount']}}</td>
+            <td>{{$units[$i]['All']['AttackTer']}}</td>
+            <td>{{$units[$i]['All']['AttackAir']}}</td>
+            <td>{{$units[$i]['All']['AttackMagicAll']}}</td>
+            <td>{{$units[$i]['All']['Armor']}}</td>
+            <td>{{$units[$i]['All']['Shield']}}</td>
+            <td>{{$units[$i]['All']['HP']}}</td>
+            <td>{{($units[$i]['All']['AttackCoolDouble'] + $units[$i]['All']['AttackCoolInt'])}}</td>
         </tr>
     @endfor
 </table>
