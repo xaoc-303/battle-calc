@@ -19,6 +19,7 @@ class BattleCalcServiceProvider extends ServiceProvider {
 	public function boot()
 	{
 		$this->package('xaoc303/battle-calc');
+        include __DIR__.'/../../routes.php';
 	}
 
 	/**
