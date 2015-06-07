@@ -18,8 +18,8 @@ class Army
      */
     public function __construct($input_units, $race)
     {
-        $units = new Unit();
-        $this->setUnits($units->createArmy($input_units, $race));
+        $units = new Squad();
+        $this->setUnits($units->createArmy($input_units));
     }
 
     /**

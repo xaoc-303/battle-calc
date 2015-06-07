@@ -33,8 +33,11 @@ class BattleCalcController extends \Controller
      */
     public function getArmyBase($id_army, $race)
     {
+        $units = Config::get('battle-calc::units');
         return View::make('battle-calc::views.getarmybase')
-            ->with('units', Config::get('battle-calc::units.'.$race))
+            ->with('units', array_where($units, function($key, $value) use ($race) {
+                return $value['race_id'] == $race;
+            }))
             ->with('id_army', (int) $id_army);
     }
 

@@ -1,7 +1,5 @@
 <?php namespace Xaoc303\BattleCalc;
 
-use Config;
-
 /**
  * Class Unit
  * @package Xaoc303\BattleCalc
@@ -88,95 +86,64 @@ class Unit
      */
     public $magic3;
 
-    public function findAllOfRace($race)
+    public function findById($id)
     {
-        return array_map(function ($v) { return (object) $v; }, Config::get('battle-calc::units.'.$race));
-    }
-
-    public function createArmy($input_units, $race)
-    {
-        $units = $this->findAllOfRace($race);
-
-        $result_units = array();
-
-        foreach ($units as $unit) {
-            if ($input_units[$unit->id] > 0) { // количество
-                $result_units[] = $this->create($unit, $input_units);
-            }
+        $unit = $this->findByField('id', $id);
+        if (empty($unit)) {
+            return null;
         }
 
-        return $result_units;
+        $unit = array_shift($unit);
+        if (empty($unit)) {
+            return null;
+        }
+
+        return $this->create($unit);
     }
 
-    public function create($unit, $input_units)
+    public function findByRaceId($id)
     {
-        $masUnitTownDistruct = array(104, 204, 308);
+        $units = $this->findByField('race_id', $id);
+        if (empty($units)) {
+            return null;
+        }
 
-        $base = array();
-        $base['ID']            = $unit->id;               // id
-        $base['ManCount']      = $input_units[$unit->id]; // Количество
-        $base['Iniciative']    = 0;                       // Инициатива
-        $base['ShieldUp']      = 1;                       // Щит
-        $base['ArmorUp']       = 1;                       // Броня
-        $base['AttackTerUp']   = 1;                       // атака земля
-        $base['AttackAirUp']   = 1;                       // атака воздух
-        $base['AttackMagicUp'] = 1;                       // Магия
-        $base['Magic'][0]      = $unit->magic1;           // Магия
-        $base['Magic'][1]      = $unit->magic2;           // Магия
-        $base['Magic'][2]      = $unit->magic3;           // Магия
+        $return_units = [];
+        foreach ($units as $unit) {
+            $return_units[] = $this->create($unit);
+        }
+        return $return_units;
+    }
 
+    private function findByField($field_key, $field_value)
+    {
+        $units = $this->getUnits();
+        return array_where($units, function($key, $value) use ($field_key, $field_value) {
+            return $value[$field_key] == $field_value;
+        });
+    }
 
-        $battle = array();
-        $base['TownDistruct'] = in_array($base['ID'], $masUnitTownDistruct);
-        $battle['TownDistruct'] = $base['TownDistruct'];
+    public function getUnits()
+    {
+        //return app('config')->get('battle-calc::units');
+        return \Config::get('battle-calc::units');
+    }
 
-        $battle['Iniciative'] = $unit->init;    // Инициатива
-        $battle['UT'] = $unit->type;            // Тип
+    public function create($unit_params)
+    {
+        //return array_map(function ($v) { return (object) $v; }, $unit);
 
-        $battle['Bio'] = $unit->bio;            // био-тип
+        $vars = get_class_vars(get_class($this));
 
-        $base['Shield'] = $unit->shield;        // Щит
-        $battle['Shield'] = $base['Shield'] * $base['ManCount'];
+        $unit = new Unit();
+        foreach ($unit_params as $key => $value) {
 
-        $base['Armor'] = $unit->armor;          // Броня
-        $battle['Armor'] = $base['Armor'] * $base['ManCount'];
+            if (!array_key_exists($key,$vars)) {
+                return null;
+            }
 
-        $base['HP'] = $unit->hp;                // Здоровье
-        $battle['HP'] = $base['HP'] * $base['ManCount'];
-
-        $battle['Magic'][0] = null;
-        $battle['Magic'][1] = null;
-        $battle['Magic'][2] = null;
-
-        $battle['MagicRound'] = $unit->mround;  // Магическая атака
-        $battle['AttackMagicAll'] = 0;
-        $battle['AttackMagicShield'] = 0;
-        $battle['AttackMagicHP'] = 0;
-
-        $base['AttackCool'] = $unit->cool;      // атака задержка
-        $battle['AttackCoolInt'] = 0;
-        $battle['AttackCoolDouble'] = 0;
-
-        $base['AttackTer'] = $unit->attack_ter; // атака земля
-        $battle['AttackTer'] = 0;
-
-        $base['AttackAir'] = $unit->attack_air; // атака воздух
-        $battle['AttackAir'] = 0;
-
-        $battle['ManCountVisible'] = 0;
-        $battle['MagicManCount'] = $unit->attack_magic * $base['AttackMagicUp'];
-        $battle['ManLock'] = 0;
-        $battle['ManPhantom'] = 0;
-        $battle['Damage'] = 0;
-        $battle['Color'] = 0;
-        $battle['ManCount'] = $base['ManCount'];
-
-        $battle['HealingLive'] = 0;
-        $battle['HealingTech'] = 0;
-
-        return [
-            'Base' => $base,
-            'All'  => $battle
-        ];
+            $unit->$key = $value;
+        }
+        return $unit;
     }
 }
