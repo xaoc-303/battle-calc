@@ -3,7 +3,6 @@
 /**
  * Class Army
  * @package Xaoc303\BattleCalc
- *
  */
 class Army
 {
@@ -18,8 +17,8 @@ class Army
      */
     public function __construct($input_units, $race)
     {
-        $units = new Unit();
-        $this->setUnits($units->createArmy($input_units, $race));
+        $units = new Squad();
+        $this->setUnits($units->createArmy($input_units));
     }
 
     /**

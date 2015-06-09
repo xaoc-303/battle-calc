@@ -17,6 +17,8 @@ Run the Composer update command
 $ composer update
 ```
 
+## Setting
+
 In your `config/app.php` add `'Xaoc303\BattleCalc\BattleCalcServiceProvider'` to the end of the `providers` array
 
 ```php
@@ -28,4 +30,10 @@ In your `config/app.php` add `'Xaoc303\BattleCalc\BattleCalcServiceProvider'` to
     'Xaoc303\BattleCalc\BattleCalcServiceProvider',
 
 ),
+```
+
+## Testing
+
+```bash
+$ phpunit workbench/xaoc303/battle-calc/tests/
 ```
