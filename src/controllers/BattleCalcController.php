@@ -11,7 +11,6 @@ use Input;
  */
 class BattleCalcController extends \Controller
 {
-
     /**
      * getIndex
      *
@@ -50,9 +49,7 @@ class BattleCalcController extends \Controller
     {
         $army_1 = Input::get('army-1', []);
         $army_2 = Input::get('army-2', []);
-        $race_1 = (int) Input::get('race-1');
-        $race_2 = (int) Input::get('race-2');
 
-        return (new BattleCalc())->calculation($race_1, $army_1, $race_2, $army_2);
+        return (new BattleCalc())->calculation($army_1, $army_2);
     }
 }

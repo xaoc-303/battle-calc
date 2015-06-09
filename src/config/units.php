@@ -15,7 +15,7 @@ return array(
      * attack_air - атака по воздуху
      * attack_magic - на сколько юнитов распространяется магическая атака
      * magic1, magic2, magic3 - магия
-    */
+     */
 
     // name, init, type, bio, shield, armor, hp, mround, cool, attack_ter, attack_air, attack_magic, magic1, magic2, magic3
 

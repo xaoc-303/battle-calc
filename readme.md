@@ -1,5 +1,10 @@
 # Battle Calc
 
+[![Build Status](https://api.travis-ci.org/xaoc-303/battle-calc.svg?branch=master)](https://api.travis-ci.org/xaoc-303)
+[![Latest Stable Version](https://poser.pugx.org/xaoc303/battle-calc/v/stable)](https://packagist.org/packages/xaoc303/battle-calc)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/?branch=master)
+
 ## Composer
 In the `require` key of `composer.json` file add the following
 

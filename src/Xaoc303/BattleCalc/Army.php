@@ -12,10 +12,11 @@ class Army
     private $units;
 
     /**
+     * __construct
+     *
      * @param array $input_units
-     * @param integer $race
      */
-    public function __construct($input_units, $race)
+    public function __construct($input_units)
     {
         $units = new Squad();
         $this->setUnits($units->createArmy($input_units));
@@ -55,7 +56,7 @@ class Army
         $count = count($units);
         for ($i = 0; $i < $count; $i++) {
             $ManCount += $units[$i]['All']['ManCount'];
-            if ($units[$i]['All']['Iniciative'] > $Inic and $units[$i]['All']['ManCount'] > 0) {
+            if ($units[$i]['All']['Iniciative'] > $Inic && $units[$i]['All']['ManCount'] > 0) {
                 $Inic = $units[$i]['All']['Iniciative'];
             }
         }
@@ -83,88 +84,166 @@ class Army
             $unitsSh[$i]['All']['ManCountVisible'] = $unitsSh[$i]['All']['ManCount'];
 
             if ($unitsSh[$i]['All']['ManCount'] > 0) {
-                switch ($unitsSh[$i]['Base']['ID']) {
-                    case    105:    // Dark Templar
-                    case    109:    // Observer
-                        $unitsSh[$i]['All']['ManCountVisible'] = 0;
-                        break;
-                    case    114:    // Arbiter
-                        // todo: проверить
-                        $ManCount = $unitsSh[$i]['All']['MagicManCount'] * $unitsSh[$i]['All']['ManCount'];
-                        while ($ManCount > 0) {
-                            $ManCountB = true;
-
-                            for ($i1 = 0; $i1 < count($unitsSh); $i1++) {
-                                if ($i1 != $i && $unitsSh[$i1]['All']['ManCount'] > 0 && $unitsSh[$i1]['All']['ManCountVisible'] != 0) {
-                                    $unitsSh[$i1]['All']['ManCountVisible']--;
-                                    $ManCount--;
-                                    $ManCountB = false;
-                                    if ($ManCount == 0) {
-                                        $i1 = count($unitsSh);
-                                    }
-                                }
-                            }
-
-                            if ($ManCountB) {
-                                $ManCount = 0;
-                            }
-                        }
-                        $i = count($unitsSh);
-                        break;
-                    case    204:    // Ghost
-                        // todo: проверить
-                        if ($Round > $unitsSh[$i]['All']['Iniciative'] - 20) {
-                            $unitsSh[$i]['All']['ManCountVisible'] = 0;
-                        } else {
-                            $unitsSh[$i]['All']['ManCountVisible'] = $unitsSh[$i]['All']['ManCount'];
-                        }
-                        break;
-                    case    213:    // Writh
-                        // todo: проверить
-                        if ($Round > $unitsSh[$i]['All']['Iniciative'] - 20) {
-                            $unitsSh[$i]['All']['ManCountVisible'] = 0;
-                        } else {
-                            $unitsSh[$i]['All']['ManCountVisible'] = $unitsSh[$i]['All']['ManCount'];
-                        }
-                        break;
-                    case    305:    // Lurker
-                        // todo: проверить
-                        if ($Round < $unitsSh[$i]['All']['Iniciative'] - 2) {
-                            $unitsSh[$i]['All']['ManCountVisible'] = 0;
-                        }
-                        break;
-                }
+                $this->setShadow($unitsSh, $i, $count, $Round);
             }
         }
 
-        $ManCount = 0;
-        $count = count($unitsDet);
-        for ($i = 0; $i < $count; $i++) {
-            if (in_array($unitsDet[$i]['Base']['ID'], [109, 211, 309]) and $unitsDet[$i]['All']['ManCount'] > 0) {
-                $ManCount += $unitsDet[$i]['All']['MagicManCount'] * $unitsDet[$i]['All']['ManCount'];
-            }
-        }
-
+        $ManCount = $this->getDetectorsCount($unitsDet);
         while ($ManCount > 0) {
-            $ManCountB = true;
-            $count = count($unitsSh);
-            for ($i = 0; $i < $count; $i++) {
-                if ($unitsSh[$i]['All']['ManCount'] > 0 && $unitsSh[$i]['All']['ManCountVisible'] != $unitsSh[$i]['All']['ManCount']) {
-                    $unitsSh[$i]['All']['ManCountVisible']++;
-                    $ManCount--;
-                    $ManCountB = false;
-                    if ($ManCount == 0) {
-                        $i = count($unitsSh);
-                    }
-                }
-            }
-            if ($ManCountB) {
-                $ManCount = 0;
-            }
+            $this->unsetShadow($unitsSh, $ManCount);
         }
 
         $this->setUnits($unitsSh);
         $ArmyDet->setUnits($unitsDet);
+    }
+
+    /**
+     * setShadow
+     *
+     * @param array $unitsSh
+     * @param int $i
+     * @param int $units_count
+     * @param int $Round
+     */
+    private function setShadow(&$unitsSh, &$i, &$units_count, $Round)
+    {
+        switch ($unitsSh[$i]['Base']['ID']) {
+            case 105: // Dark Templar
+            case 109: // Observer
+                $this->setShadowSquadAll($unitsSh, $i);
+                break;
+
+            case 114: // Arbiter
+                $this->setShadowSquad114($unitsSh, $i, $units_count);
+                break;
+
+            case 204: // Ghost
+                $this->setShadowSquadRound($unitsSh, $i, $Round);
+                break;
+
+            case 213: // Writh
+                $this->setShadowSquadRound($unitsSh, $i, $Round);
+                break;
+
+            case 305: // Lurker
+                $this->setShadowSquadAllHold($unitsSh, $i, $Round);
+                break;
+        }
+    }
+
+    /**
+     * setShadowSquadAll
+     *
+     * @param array $unitsSh
+     * @param int $i
+     */
+    private function setShadowSquadAll(&$unitsSh, &$i)
+    {
+        $unitsSh[$i]['All']['ManCountVisible'] = 0;
+    }
+
+    /**
+     * setShadowSquad114
+     *
+     * @param array $unitsSh
+     * @param int $i
+     * @param int $units_count
+     */
+    private function setShadowSquad114(&$unitsSh, &$i, &$units_count)
+    {
+        $ManCount = $unitsSh[$i]['All']['MagicManCount'] * $unitsSh[$i]['All']['ManCount'];
+        while ($ManCount > 0) {
+            $ManCountB = true;
+
+            for ($i1 = 0; $i1 < $units_count; $i1++) {
+                if ($i1 != $i && $unitsSh[$i1]['All']['ManCount'] > 0 && $unitsSh[$i1]['All']['ManCountVisible'] != 0) {
+                    $unitsSh[$i1]['All']['ManCountVisible']--;
+                    $ManCount--;
+                    $ManCountB = false;
+                    if ($ManCount == 0) {
+                        $i1 = $units_count;
+                    }
+                }
+            }
+
+            if ($ManCountB) {
+                $ManCount = 0;
+            }
+        }
+        $i = $units_count;
+    }
+
+    /**
+     * setShadowSquadRound
+     *
+     * @param array $unitsSh
+     * @param int $i
+     * @param int $Round
+     */
+    private function setShadowSquadRound(&$unitsSh, &$i, &$Round)
+    {
+        if ($Round > $unitsSh[$i]['All']['Iniciative'] - 20) {
+            $unitsSh[$i]['All']['ManCountVisible'] = 0;
+        } else {
+            $unitsSh[$i]['All']['ManCountVisible'] = $unitsSh[$i]['All']['ManCount'];
+        }
+    }
+
+    /**
+     * setShadowSquadAllHold
+     *
+     * @param array $unitsSh
+     * @param int $i
+     * @param null|int $Round
+     */
+    private function setShadowSquadAllHold(&$unitsSh, &$i, $Round = null)
+    {
+        if ($Round < $unitsSh[$i]['All']['Iniciative'] - 2) {
+            $unitsSh[$i]['All']['ManCountVisible'] = 0;
+        }
+    }
+
+    /**
+     * getDetectorsCount
+     *
+     * @param array $unitsDet
+     * @return int
+     */
+    private function getDetectorsCount(&$unitsDet)
+    {
+        $ManCount = 0;
+        $count = count($unitsDet);
+        for ($i = 0; $i < $count; $i++) {
+            if (in_array($unitsDet[$i]['Base']['ID'], [109, 211, 309]) && $unitsDet[$i]['All']['ManCount'] > 0) {
+                $ManCount += $unitsDet[$i]['All']['MagicManCount'] * $unitsDet[$i]['All']['ManCount'];
+            }
+        }
+        return $ManCount;
+    }
+
+    /**
+     * unsetShadow
+     *
+     * @param array $unitsSh
+     * @param int $ManCount
+     */
+    private function unsetShadow(&$unitsSh, &$ManCount)
+    {
+        $ManCountB = true;
+        $count = count($unitsSh);
+        for ($i = 0; $i < $count; $i++) {
+            if ($unitsSh[$i]['All']['ManCount'] > 0 && $unitsSh[$i]['All']['ManCountVisible'] != $unitsSh[$i]['All']['ManCount']) {
+                $unitsSh[$i]['All']['ManCountVisible']++;
+                $ManCount--;
+                $ManCountB = false;
+                if ($ManCount == 0) {
+                    $i = count($unitsSh);
+                }
+            }
+        }
+        if ($ManCountB) {
+            $ManCount = 0;
+        }
     }
 
     /**
@@ -193,43 +272,74 @@ class Army
     }
 
     /**
-     * attackTo
+     * attackOn
      *
      * @param Army $ArmyDef
      * @param integer $Inic
      */
-    public function attackTo(Army &$ArmyDef, $Inic)
+    public function attackOn(Army &$ArmyDef, $Inic)
     {
         $unitsAtt = $this->getUnits();
         $unitsDef = $ArmyDef->getUnits();
 
         $count = count($unitsAtt);
-
         for ($i = 0; $i < $count; $i++) {
-            if ($unitsAtt[$i]['All']['Iniciative'] >= $Inic and $unitsAtt[$i]['All']['ManCount']>0) {
+            if ($unitsAtt[$i]['All']['Iniciative'] >= $Inic && $unitsAtt[$i]['All']['ManCount'] > 0) {
                 $Cool = 24.0 / $unitsAtt[$i]['Base']['AttackCool'];         // Атак в секунду
                 $Cool = round($Cool, 2);                                    // Округление до сотых
                 $Cool += $unitsAtt[$i]['All']['AttackCoolDouble'];          // + предыдущий остаток
                 $unitsAtt[$i]['All']['AttackCoolInt'] = (int) $Cool;        // int атак в секунду
                 $unitsAtt[$i]['All']['AttackCoolDouble'] = $Cool - $unitsAtt[$i]['All']['AttackCoolInt'];    // double остаток атак в секунду
                 if ($unitsAtt[$i]['All']['AttackCoolInt'] > 0) {
-                    $unitsAtt[$i]['All']['AttackAir'] = ($unitsAtt[$i]['Base']['AttackAir'] * $unitsAtt[$i]['All']['ManCount']) * $unitsAtt[$i]['All']['AttackCoolInt'];
-                    $unitsAtt[$i]['All']['AttackTer'] = ($unitsAtt[$i]['Base']['AttackTer'] * $unitsAtt[$i]['All']['ManCount']) * $unitsAtt[$i]['All']['AttackCoolInt'];
-
-                    if ($unitsAtt[$i]['All']['MagicRound'] > 0) {
-                        for ($k = 0; $k < 3; $k++) {
-                            $unitsAtt[$i]['All']['Magic'][$k] = $unitsAtt[$i]['Base']['Magic'][$k];
-                            $this->magicAttackTo($i, $k, $unitsAtt, $unitsDef);
-                        }
-                    }
-                    $unitsAtt[$i]['All']['MagicRound']--;
-                    $unitsAtt[$i]['All']['MagicRound'] = $this->unitMagicRound($unitsAtt[$i]['Base']['ID'], $unitsAtt[$i]['All']['MagicRound']);
+                    $this->attackAirOn($unitsAtt, $i);
+                    $this->attackTerOn($unitsAtt, $i);
+                    $this->attackMagicOn($unitsAtt, $i);
                 }
             }
         }
 
         $this->setUnits($unitsAtt);
         $ArmyDef->setUnits($unitsDef);
+    }
+
+    /**
+     * attackAirOn
+     *
+     * @param array $unitsAtt
+     * @param int $i
+     */
+    private function attackAirOn(&$unitsAtt, &$i)
+    {
+        $unitsAtt[$i]['All']['AttackAir'] = ($unitsAtt[$i]['Base']['AttackAir'] * $unitsAtt[$i]['All']['ManCount']) * $unitsAtt[$i]['All']['AttackCoolInt'];
+    }
+
+    /**
+     * attackTerOn
+     *
+     * @param array $unitsAtt
+     * @param int $i
+     */
+    private function attackTerOn(&$unitsAtt, &$i)
+    {
+        $unitsAtt[$i]['All']['AttackTer'] = ($unitsAtt[$i]['Base']['AttackTer'] * $unitsAtt[$i]['All']['ManCount']) * $unitsAtt[$i]['All']['AttackCoolInt'];
+    }
+
+    /**
+     * attackMagicOn
+     *
+     * @param array $unitsAtt
+     * @param int $i
+     */
+    private function attackMagicOn(&$unitsAtt, &$i)
+    {
+        if ($unitsAtt[$i]['All']['MagicRound'] > 0) {
+            for ($k = 0; $k < 3; $k++) {
+                $unitsAtt[$i]['All']['Magic'][$k] = $unitsAtt[$i]['Base']['Magic'][$k];
+                $this->attackMagic($i, $k, $unitsAtt, $unitsDef);
+            }
+        }
+        $unitsAtt[$i]['All']['MagicRound']--;
+        $unitsAtt[$i]['All']['MagicRound'] = $this->unitMagicRound($unitsAtt[$i]['Base']['ID'], $unitsAtt[$i]['All']['MagicRound']);
     }
 
     /**
@@ -292,19 +402,19 @@ class Army
     }
 
     /**
-     * magicAttackTo
+     * attackMagic
      *
      * @param integer $i
      * @param string $k
      * @param array $ArmyAtt
      * @param array $ArmyDef
      */
-    private function magicAttackTo($i, $k, &$ArmyAtt, &$ArmyDef)
+    private function attackMagic($i, $k, &$ArmyAtt, &$ArmyDef)
     {
         /** @var integer $ManCount */
         /** @var bool $ManCountB */
 
-        if ($ArmyAtt[$i]['All']['Magic'][$k] != null and $ArmyAtt[$i]['All']['Magic'][$k] != 'Steam') {
+        if ($ArmyAtt[$i]['All']['Magic'][$k] != null && $ArmyAtt[$i]['All']['Magic'][$k] != 'Steam') {
             $ArmyAtt[$i]['All']['AttackAir'] = 0;
             $ArmyAtt[$i]['All']['AttackTer'] = 0;
         }
@@ -320,7 +430,7 @@ class Army
                     $ManCountB = true;
                     $count = count($ArmyDef);
                     for ($i1 = 0; $i1 < $count; $i1++) {
-                        if ($ArmyDef[$i1]['All']['ManCount'] > 0 and $ArmyDef[$i1]['All']['ManLock'] != $ArmyDef[$i1]['All']['ManCount']) {
+                        if ($ArmyDef[$i1]['All']['ManCount'] > 0 && $ArmyDef[$i1]['All']['ManLock'] != $ArmyDef[$i1]['All']['ManCount']) {
                             $ArmyDef[$i1]['All']['ManLock']++;
                             $ManCount--;
                             $ManCountB = false;
@@ -342,7 +452,7 @@ class Army
                     $ManCountB = true;
                     $count = count($ArmyDef);
                     for ($i1 = 0; $i1 < $count; $i1++) {
-                        if ($ArmyDef[$i1]['All']['ManCount'] > 0 and $ArmyDef[$i1]['All']['ManLock'] != $ArmyDef[$i1]['All']['ManCount']) {
+                        if ($ArmyDef[$i1]['All']['ManCount'] > 0 && $ArmyDef[$i1]['All']['ManLock'] != $ArmyDef[$i1]['All']['ManCount']) {
                             $ArmyDef[$i1]['All']['ManLock']++;
                             $ManCount--;
                             $ManCountB = false;
@@ -368,7 +478,6 @@ class Army
             case    'Scarab':
                 $ArmyAtt[$i]['All']['AttackTer'] = 100 * $ArmyAtt[$i]['All']['ManCount'];
                 break;
-
 
             // -------------------------------
             case    'Remont':
@@ -400,7 +509,7 @@ class Army
                 }
                 break;
             case    'Steam':
-                if ($ArmyAtt[$i]['All']['HP']/$ArmyAtt[$i]['All']['ManCount'] > 16) {
+                if ($ArmyAtt[$i]['All']['HP'] / $ArmyAtt[$i]['All']['ManCount'] > 16) {
                     $ArmyAtt[$i]['All']['AttackAir'] = $ArmyAtt[$i]['All']['AttackAir'] * 2;
                     $ArmyAtt[$i]['All']['AttackTer'] = $ArmyAtt[$i]['All']['AttackTer'] * 2;
                     $ArmyAtt[$i]['All']['HP'] = $ArmyAtt[$i]['All']['HP'] - (8 * $ArmyAtt[$i]['All']['ManCount']);
@@ -469,7 +578,7 @@ class Army
         $count = count($units);
         for ($i = 0; $i < $count; $i++) {
             if ($units[$i]['All']['ManCount'] > 0) {
-                if ($units[$i]['All']['AttackAir'] > 0 and $units[$i]['All']['AttackTer'] and $ManCountA > 0) {
+                if ($units[$i]['All']['AttackAir'] > 0 && $units[$i]['All']['AttackTer'] && $ManCountA > 0) {
                     $units[$i]['All']['AttackTer'] = 0;
                 } else {
                     $units[$i]['All']['AttackAir'] = 0;
@@ -496,11 +605,11 @@ class Army
     }
 
     /**
-     * damageTo
+     * damageOn
      *
      * @param Army $ArmyDef
      */
-    public function damageTo(Army &$ArmyDef)
+    public function damageOn(Army &$ArmyDef)
     {
         $unitsAtt = $this->getUnits();
         $unitsDef = $ArmyDef->getUnits();
@@ -520,15 +629,8 @@ class Army
         $HealingLive = 0;
         $HealingTech = 0;
 
-
-        //	int iRand;
-        //	rand;rand;rand;
-        //	iRand=ArmyDef.size()-1;
-        //	if (iRand>0) iRand=rand()%iRand;
-        //	iRand=iRand;
-
         $count = count($unitsAtt);
-        for ($i=0; $i<$count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $DamageTer            += $unitsAtt[$i]['All']['AttackTer'];
             $DamageAir            += $unitsAtt[$i]['All']['AttackAir'];
             $DamageMagicAll       += $unitsAtt[$i]['All']['AttackMagicAll'];
@@ -539,28 +641,28 @@ class Army
 
         $count = count($unitsDef);
         for ($i = 0; $i < $count; $i++) {
-            if ($unitsDef[$i]['All']['UT']==0) {
+            if ($unitsDef[$i]['All']['UT'] == 0) {
                 $ManCountT_Def += $unitsDef[$i]['All']['ManCountVisible'];
             }
-            if ($unitsDef[$i]['All']['UT']==1) {
+            if ($unitsDef[$i]['All']['UT'] == 1) {
                 $ManCountA_Def += $unitsDef[$i]['All']['ManCountVisible'];
             }
             $HealingLive        += $unitsDef[$i]['All']['HealingLive'];
             $HealingTech        += $unitsDef[$i]['All']['HealingTech'];
         }
 
-        if ($DamageTer==0 || $ManCountT_Def==0) {
+        if ($DamageTer == 0 || $ManCountT_Def == 0) {
             $ManDamageT = 0;
         }
-        if ($DamageTer>0 && $ManCountT_Def>0) {
-            $ManDamageT = $DamageTer/$ManCountT_Def;
+        if ($DamageTer > 0 && $ManCountT_Def > 0) {
+            $ManDamageT = $DamageTer / $ManCountT_Def;
         }
 
-        if ($DamageAir==0 || $ManCountA_Def==0) {
+        if ($DamageAir == 0 || $ManCountA_Def == 0) {
             $ManDamageA = 0;
         }
-        if ($DamageAir>0 && $ManCountA_Def>0) {
-            $ManDamageA = $DamageAir/$ManCountA_Def;
+        if ($DamageAir > 0 && $ManCountA_Def > 0) {
+            $ManDamageA = $DamageAir / $ManCountA_Def;
         }   // среднее на каждгого. воздух
 
         $count = count($unitsDef);
@@ -577,13 +679,13 @@ class Army
                     }
                 }
                 if ($DamageMagicAll > 0) {
-                    $ManDamageAll   += $DamageMagicAll     -(($DamageMagicAll   * $unitsDef[$i]['Base']['Armor'])/100);
+                    $ManDamageAll    += $DamageMagicAll     -(($DamageMagicAll   * $unitsDef[$i]['Base']['Armor'])/100);
                 }
                 if ($DamageMagicShield > 0) {
-                    $ManDamageShield+= $DamageMagicShield  -(($DamageMagicShield* $unitsDef[$i]['Base']['Armor'])/100);
+                    $ManDamageShield += $DamageMagicShield  -(($DamageMagicShield* $unitsDef[$i]['Base']['Armor'])/100);
                 }
                 if ($DamageMagicHP > 0) {
-                    $ManDamageHP    += $DamageMagicHP      -(($DamageMagicHP    * $unitsDef[$i]['Base']['Armor'])/100);
+                    $ManDamageHP     += $DamageMagicHP      -(($DamageMagicHP    * $unitsDef[$i]['Base']['Armor'])/100);
                 }
 
                 $unitsDef[$i]['All']['Shield'] -= $ManDamageShield;
@@ -671,7 +773,7 @@ class Army
             if ($units[$i]['All']['HP'] % $units[$i]['Base']['HP'] > 0) {
                 $units[$i]['All']['ManCount']++;
             }
-            if ($units[$i]['All']['ManPhantom'] > 0 and $ManCountTemp>$units[$i]['All']['ManCount']) {
+            if ($units[$i]['All']['ManPhantom'] > 0 && $ManCountTemp > $units[$i]['All']['ManCount']) {
                 $units[$i]['All']['ManPhantom']--;
             }
 
@@ -683,24 +785,42 @@ class Army
     }
 
     /**
-     * color
+     * logColorize
      */
-    public function color()
+    public function logColorize()
     {
         $units = $this->getUnits();
-
         $count = count($units);
         for ($i = 0; $i < $count; $i++) {
-            if ($units[$i]['All']['AttackAir'] != 0 or $units[$i]['All']['AttackTer'] != 0) {
-                $units[$i]['All']['Color'] = 1;
-            }
-            for ($k = 0; $k < 3; $k++) {
-                if ($units[$i]['All']['Magic'][$k] != null) {
-                    $units[$i]['All']['Color'] = 2;
-                }
+            $this->logColorize1($units, $i);
+            $this->logColorize2($units, $i);
+        }
+        $this->setUnits($units);
+    }
+
+    /**
+     * logColorize1
+     *
+     * @param array $units
+     * @param int $i
+     */
+    private function logColorize1(&$units, &$i) {
+        if ($units[$i]['All']['AttackAir'] != 0 || $units[$i]['All']['AttackTer'] != 0) {
+            $units[$i]['All']['Color'] = 1;
+        }
+    }
+
+    /**
+     * logColorize2
+     *
+     * @param array $units
+     * @param int $i
+     */
+    private function logColorize2(&$units, &$i) {
+        for ($k = 0; $k < 3; $k++) {
+            if ($units[$i]['All']['Magic'][$k] != null) {
+                $units[$i]['All']['Color'] = 2;
             }
         }
-
-        $this->setUnits($units);
     }
 }
