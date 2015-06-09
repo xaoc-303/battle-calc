@@ -1,5 +1,7 @@
 <?php namespace Xaoc303\BattleCalc;
 
+use Illuminate\Support\Facades\Config;
+
 /**
  * Class Unit
  * @package Xaoc303\BattleCalc
@@ -86,6 +88,12 @@ class Unit
      */
     public $magic3;
 
+    /**
+     * findById
+     *
+     * @param int $id
+     * @return null|Unit
+     */
     public function findById($id)
     {
         $unit = $this->findByField('id', $id);
@@ -101,6 +109,12 @@ class Unit
         return $this->create($unit);
     }
 
+    /**
+     * findByRaceId
+     *
+     * @param int $id
+     * @return array|null
+     */
     public function findByRaceId($id)
     {
         $units = $this->findByField('race_id', $id);
@@ -115,21 +129,39 @@ class Unit
         return $return_units;
     }
 
+    /**
+     * findByField
+     *
+     * @param string $field_key
+     * @param mixed $field_value
+     * @return array
+     */
     private function findByField($field_key, $field_value)
     {
         $units = $this->getUnits();
-        return array_where($units, function($key, $value) use ($field_key, $field_value) {
+        return array_where($units, function ($key, $value) use ($field_key, $field_value) {
             return $value[$field_key] == $field_value;
         });
     }
 
+    /**
+     * getUnits
+     *
+     * @return array
+     */
     public function getUnits()
     {
         //return app('config')->get('battle-calc::units');
-        return \Config::get('battle-calc::units');
+        return Config::get('battle-calc::units');
     }
 
-    public function create($unit_params)
+    /**
+     * create
+     *
+     * @param array $unit_params
+     * @return null|Unit
+     */
+    private function create($unit_params)
     {
         //return array_map(function ($v) { return (object) $v; }, $unit);
 
@@ -137,8 +169,7 @@ class Unit
 
         $unit = new Unit();
         foreach ($unit_params as $key => $value) {
-
-            if (!array_key_exists($key,$vars)) {
+            if (! array_key_exists($key, $vars)) {
                 return null;
             }
 

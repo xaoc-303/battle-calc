@@ -6,6 +6,12 @@
  */
 class Squad
 {
+    /**
+     * createArmy
+     *
+     * @param array $input_units
+     * @return array
+     */
     public function createArmy($input_units)
     {
         $squads = [];
@@ -18,6 +24,13 @@ class Squad
         return $squads;
     }
 
+    /**
+     * create
+     *
+     * @param Unit $unit
+     * @param int $units_count
+     * @return array
+     */
     public function create(Unit $unit, $units_count)
     {
         $masUnitTownDistruct = array(104, 204, 308);

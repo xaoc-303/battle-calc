@@ -3,7 +3,6 @@
 /**
  * Class Army
  * @package Xaoc303\BattleCalc
- *
  */
 class Army
 {
