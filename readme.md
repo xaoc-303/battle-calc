@@ -1,5 +1,8 @@
 # Battle Calc
 
+[![Latest Stable Version](https://poser.pugx.org/xaoc303/battle-calc/v/stable)](https://packagist.org/packages/xaoc303/battle-calc)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/xaoc-303/battle-calc/?branch=master)
+
 ## Composer
 In the `require` key of `composer.json` file add the following
 

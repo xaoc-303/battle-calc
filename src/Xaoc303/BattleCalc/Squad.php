@@ -18,7 +18,9 @@ class Squad
         foreach ($input_units as $unit_id => $units_count) {
             if ($units_count > 0) {
                 $unit = (new Unit)->findById($unit_id);
-                $squads[] = $this->create($unit, $units_count);
+                if (!empty ($unit)) {
+                    $squads[] = $this->create($unit, $units_count);
+                }
             }
         }
         return $squads;

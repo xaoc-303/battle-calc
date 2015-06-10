@@ -151,7 +151,6 @@ class Unit
      */
     public function getUnits()
     {
-        //return app('config')->get('battle-calc::units');
         return Config::get('battle-calc::units');
     }
 
@@ -163,8 +162,6 @@ class Unit
      */
     private function create($unit_params)
     {
-        //return array_map(function ($v) { return (object) $v; }, $unit);
-
         $vars = get_class_vars(get_class($this));
 
         $unit = new Unit();
