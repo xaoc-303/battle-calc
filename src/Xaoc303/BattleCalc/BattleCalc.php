@@ -85,16 +85,16 @@ class BattleCalc
         $this->army1->clear();
         $this->army2->clear();
 
-        $this->army1->attackOn($this->army2, $MaxIniciative);
-        $this->army2->attackOn($this->army1, $MaxIniciative);
+        ArmyAttack::run($this->army1, $this->army2, $MaxIniciative);
+        ArmyAttack::run($this->army2, $this->army1, $MaxIniciative);
 
         $this->army1->attackNull($this->army2->manCountVisible(1));
         $this->army2->attackNull($this->army1->manCountVisible(1));
 
-        $this->army1->logColorize();
-        $this->army2->logColorize();
+        ArmyLog::colorize($this->army1);
+        ArmyLog::colorize($this->army2);
 
-        if ($this->exitRound($this->army1, $this->army2, $MaxIniciative, $Round)) {
+        if ($this->isExitRound($Round)) {
             ob_start();
             echo '$Round = '.$Round.'<br />';
             echo '$MaxIniciative = '.$MaxIniciative.'<br />';
@@ -107,8 +107,8 @@ class BattleCalc
             exit;
         }
 
-        $this->army2->damageOn($this->army1);
-        $this->army1->damageOn($this->army2);
+        ArmyDamage::run($this->army2, $this->army1);
+        ArmyDamage::run($this->army1, $this->army2);
 
         $ManCount1 = $this->army1->count();
         $ManCount2 = $this->army2->count();
@@ -117,13 +117,10 @@ class BattleCalc
     /**
      * exitRound
      *
-     * @param Army $Army1
-     * @param Army $Army2
-     * @param integer $Inic
      * @param integer $Round
      * @return bool
      */
-    private function exitRound(Army &$Army1, Army &$Army2, $Inic, $Round)
+    private function isExitRound($Round)
     {
         $ERound = false;
         /*
