@@ -1,6 +1,7 @@
 <?php namespace Xaoc303\BattleCalc;
 
-class TestCase extends \Illuminate\Foundation\Testing\TestCase
+//class TestCase extends \Illuminate\Foundation\Testing\TestCase
+class TestCase extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
