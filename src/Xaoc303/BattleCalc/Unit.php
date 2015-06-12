@@ -1,6 +1,6 @@
 <?php namespace Xaoc303\BattleCalc;
 
-use Illuminate\Support\Facades\Config;
+//use Illuminate\Support\Facades\Config;
 
 /**
  * Class Unit
