@@ -16,7 +16,9 @@ class BattleCalcControllerTest extends TestCase
 
     public function prepareForTests()
     {
-        $this->client = new Client(['base_uri' => 'http://localhost:8000']);
+        $host = getenv('APP_HOST');
+        $host = !empty($host) ? $host : 'http://127.0.0.1:8000';
+        $this->client = new Client(['base_uri' => $host]);
     }
 
     public function testGetIndex()
